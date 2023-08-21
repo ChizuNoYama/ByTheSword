@@ -9,5 +9,6 @@ public interface IEntity
     int GetArmorClass();
     void Attack(IEntity target);
     bool IsAlive();
+    bool IsEnemyTo(IEntity target);
 
 }

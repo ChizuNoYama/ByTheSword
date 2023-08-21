@@ -1,5 +1,6 @@
-[gd_scene load_steps=8 format=3 uid="uid://c6wxumu0ff6t1"]
+[gd_scene load_steps=9 format=3 uid="uid://c6wxumu0ff6t1"]
 
+[ext_resource type="Script" path="res://Scripts/Controllers/SceneController.cs" id="1_5ycq3"]
 [ext_resource type="TileSet" uid="uid://dwg8gdun4obil" path="res://Assets/Tiles/TileMaps/DungeonTM.tres" id="1_ikre6"]
 [ext_resource type="Texture2D" uid="uid://8rwm5tbr0tar" path="res://Assets/Sprites/RedTriangle.png" id="2_i85ev"]
 [ext_resource type="Texture2D" uid="uid://xuee5aedvbls" path="res://Assets/Sprites/BlueCircle.png" id="3_88a61"]
@@ -12,7 +13,9 @@ size = Vector2(62, 62)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qq0eu"]
 size = Vector2(32, 32)
 
-[node name="Node2D" type="Node2D"]
+[node name="Root" type="Node2D"]
+script = ExtResource("1_5ycq3")
+metadata/_edit_group_ = true
 
 [node name="TileMap" type="TileMap" parent="."]
 tile_set = ExtResource("1_ikre6")
@@ -43,6 +46,8 @@ layer_3/tile_data = PackedInt32Array()
 
 [node name="Player" type="Area2D" parent="."]
 position = Vector2(64, 96)
+collision_layer = 2
+collision_mask = 13
 script = ExtResource("3_mv83x")
 metadata/_edit_group_ = true
 
@@ -55,13 +60,10 @@ centered = false
 position = Vector2(16, 16)
 shape = SubResource("RectangleShape2D_pys0d")
 
-[node name="RichTextLabel" type="RichTextLabel" parent="Player"]
-visible = false
-offset_right = 40.0
-offset_bottom = 40.0
-
 [node name="Enemy" type="CharacterBody2D" parent="."]
 position = Vector2(192, 96)
+collision_layer = 4
+collision_mask = 3
 script = ExtResource("4_2rit0")
 metadata/_edit_group_ = true
 metadata/is_enemy = true

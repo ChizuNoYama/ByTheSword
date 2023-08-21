@@ -65,4 +65,9 @@ public partial class Enemy : CharacterBody2D, IEntity
     {
         return _health > 0;
     }
+
+    public bool IsEnemyTo(IEntity target)
+    {
+        return true;
+    }
 }

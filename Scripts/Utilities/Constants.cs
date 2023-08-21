@@ -11,4 +11,14 @@ public static class Constants
     public const string ACTION_STEP_DOWN = "step_down";
 
     public const string IS_ENEMY_META_IDENTIFIER = "is_enemy";
+
+    public const uint WALLS_COLLISION_LAYER = 1;
+    public const uint PLAYER_COLLISION_LAYER = 2;
+    public const uint ENEMY_COLLISION_LAYER = 3;
+    public const uint ITEMS_COLLISION_LAYER = 4;
+
+    public const int MAP_FLOOR_LAYER = 0;
+    public const int MAPP_WALL_LAYER = 1;
+    public const int MAP_FURNITURE_LAYER = 2;
+    public const int MAP_ITEMS_LAYER = 3;
 }
