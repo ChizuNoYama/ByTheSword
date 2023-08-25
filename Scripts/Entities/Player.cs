@@ -16,10 +16,9 @@ public partial class Player : Area2D, IEntity
 {
 	private MovementController _movementController = new MovementController();
 	private TurnTimer _turnTimer = new TurnTimer();
-	private List<IEntity> _nearbyEnemies = new List<IEntity>();
-	private List<Vector2> _nearbyNoGoZone = new List<Vector2>();
 	private int _health;
 	private bool _isMyTurn;
+	private bool _timerStopped;
 	private Random _diceRoll;
 	private SceneController _rootSceneController;
 	
@@ -31,19 +30,22 @@ public partial class Player : Area2D, IEntity
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		this.CollisionLayer = 1;
-		this.BodyEntered += this.OnBodyEntered;
-		this.BodyExited += this.OnBodyExited;
-		
 		_rootSceneController =  this.GetOwner<SceneController>();
 		if(_rootSceneController == null)
 		{
-			throw new Exception("Root scene controller not found");
+			_rootSceneController = this.GetTree().CurrentScene as SceneController;
 		}
+		
+		_rootSceneController?.RegisterEntity(this);
+		
+		this.BodyEntered += this.OnBodyEntered;
+		this.BodyExited += this.OnBodyExited;
+		
 		
 		_turnTimer.Interval = Constants.TURN_TIMER_INTERVAL;
 		_turnTimer.AutoReset = false;
-		_turnTimer.Elapsed += (obj, args) =>_isMyTurn = true;
+		_turnTimer.Elapsed += (obj, args) =>_timerStopped = true;
+		_timerStopped = true;
 
 		_health = 30;
 		_diceRoll = new Random();
@@ -64,136 +66,79 @@ public partial class Player : Area2D, IEntity
 			this.GetTree().Quit();
 		}
 
-		if (!_isMyTurn)
+		if (!_isMyTurn && !_timerStopped)
 		{
 			return;
 		}
-		
+        
 		if (Input.IsActionPressed(Constants.ACTION_STEP_RIGHT))
 		{
-			CellType cellType = _rootSceneController.PeekTile(this.Position + Vector2.Right * Constants.MOVEMENT_STEP);
-			switch (cellType)
-			{
-				case CellType.None:
-				case CellType.Item:
-					//TODO: have this be global move. or something. figure this shit out
-					this.Position = _movementController.StepRight(this.Position);
-					break;
-				case CellType.Enemy:
-					// TODO: Add to Combat since the player is wanting to attack this enemy. Pass the target space to CombatService/Manager
-					// IEntity targetEntity = _nearbyEnemies.FirstOrDefault(e => e.GetPosition() - this.Position == new Vector2(Constants.MOVEMENT_STEP, 0));
-					// if (targetEntity != null)
-					// {
-					// 	if (targetEntity.IsAlive())
-					// 	{
-					// 		if (targetEntity.IsEnemyTo(this))
-					// 		{	
-					// 			// TODO: Maybe will have a CombatManager to handle who attacks who first in combat
-					// 			this.Attack(targetEntity);
-					// 			targetEntity.Attack(this);
-					// 		}
-					// 	}
-					// }
-					break;
-				case CellType.NoGoZone:
-					break;
-			}
-
+			Vector2 targetPosition = this.Position + Vector2.Right * Constants.MOVEMENT_STEP;
+			CellData cellData = _rootSceneController.PeekTargetCell(targetPosition);
+			this.PerformActionOnCell(cellData, targetPosition);
 			this.EndMyTurn();
 		}
 
 		if (Input.IsActionPressed(Constants.ACTION_STEP_LEFT))
 		{
-			CellType cellType = _rootSceneController.PeekTile(this.Position + Vector2.Left * Constants.MOVEMENT_STEP);
-			switch (cellType)
-			{
-				case CellType.None:
-				case CellType.Item:
-					//TODO: have this be global move. or something. figure this shit out
-					this.Position = _movementController.StepLeft(this.Position);
-					break;
-				case CellType.Enemy:
-					// TODO: Add to Combat since the player is wanting to attack this enemy. Pass the target space to CombatService/Manager
-					break;
-				case CellType.NoGoZone:
-					break;
-			}
-
+			Vector2 targetPosition = this.Position + Vector2.Left * Constants.MOVEMENT_STEP;
+			CellData cellData = _rootSceneController.PeekTargetCell(targetPosition);
+			this.PerformActionOnCell(cellData, targetPosition);
 			this.EndMyTurn();
 		}
 
 		if (Input.IsActionPressed(Constants.ACTION_STEP_UP))
 		{
-			CellType cellType = _rootSceneController.PeekTile(this.Position + Vector2.Up * Constants.MOVEMENT_STEP);
-			switch (cellType)
-			{
-				case CellType.None:
-				case CellType.Item:
-					//TODO: have this be global move. or something. figure this shit out
-					this.Position = _movementController.StepUp(this.Position);
-					break;
-				case CellType.Enemy:
-					// TODO: Add to Combat since the player is wanting to attack this enemy. Pass the target space to CombatService/Manager
-					break;
-				case CellType.NoGoZone:
-					break;
-			}
-
+			Vector2 targetPosition = this.Position + Vector2.Up * Constants.MOVEMENT_STEP;
+			CellData cellData = _rootSceneController.PeekTargetCell(targetPosition);
+			this.PerformActionOnCell(cellData, targetPosition);
 			this.EndMyTurn();
 		}
 
 		if (Input.IsActionPressed(Constants.ACTION_STEP_DOWN))
 		{
-			CellType cellType = _rootSceneController.PeekTile(this.Position + Vector2.Down * Constants.MOVEMENT_STEP);
-			switch (cellType)
-			{
-				case CellType.None:
-				case CellType.Item:
-					//TODO: have this be global move. or something. figure this shit out
-					this.Position = _movementController.StepDown(this.Position);
-					break;
-				case CellType.Enemy:
-					// TODO: Add to Combat since the player is wanting to attack this enemy. Pass the target space to CombatService/Manager
-					break;
-				case CellType.NoGoZone:
-					break;
-			}
-			
-			
-
+			Vector2 targetPosition = this.Position + Vector2.Down * Constants.MOVEMENT_STEP;
+			CellData cellData = _rootSceneController.PeekTargetCell(targetPosition);
+			this.PerformActionOnCell(cellData, targetPosition);
 			this.EndMyTurn();
 		}
 	}
 
-	private void OnBodyEntered(Node2D node)
+	private void PerformActionOnCell(CellData cellData, Vector2 targetPosition)
 	{
-		if (node is PhysicsBody2D body)
+		if (_timerStopped)
 		{
-			var what = this.Position.Normalized();
-			if (body is IEntity entity)
+			if (cellData.IsNoGoZone)
 			{
-				if(entity.IsEnemyTo(this) && entity.IsAlive())
+				// Do nothing. Waste a turn
+				return;
+			}
+
+			if (cellData.Entity != null)
+			{
+				if (cellData.Entity.IsEnemyTo(this))
 				{
-					_nearbyEnemies.Add(entity);
+					this.Attack(cellData.Entity);
 				}
+				
+				//TODO: other possible actions like talk or whatever.
+				
+			}
+			else
+			{
+				// Move to target cell position
+				this.Position = targetPosition;
 			}
 		}
+	}
+	
 
-		// if (node is TileMap map)
-		// {
-			// Get the direction of the character and this is where the cell is.
-			// Vector2I cellPosition = map.GetNeighborCell(new Vector2I((int)this.Position.X, (int)this.Position.Y), TileSet.CellNeighbor.LeftSide);
-			// var what = this.Position.Normalized();
-			// if (map.TileSet.GetPhysicsLayerCollisionLayer(0) == Utility.GetCollisionValueFromIndices(Constants.WALLS_COLLISION_LAYER))
-			// {
-			// 	
-			// }
-			
-			// Console.WriteLine("No go zone nearby");
-		// }
+	private void OnBodyEntered(Node2D node)
+	{
+		
 	}
 
-	public void OnBodyExited(Node2D node)
+	private void OnBodyExited(Node2D node)
 	{
 		
 	}
@@ -201,7 +146,7 @@ public partial class Player : Area2D, IEntity
 	private void EndMyTurn()
 	{
 		_turnTimer.Start();
-		_isMyTurn = false;
+		_timerStopped = false;
 	}
 
 	public void ApplyDamage(int damageAmount)
@@ -210,7 +155,7 @@ public partial class Player : Area2D, IEntity
 
 		if (_health <= 0)
 		{
-			Console.WriteLine("I dead");
+			Console.WriteLine("I died.");
 			this.GetTree().Quit();
 		}
 	}
@@ -232,7 +177,7 @@ public partial class Player : Area2D, IEntity
 			Console.WriteLine($"I dealt {damageAmount}");
 			if (!target.IsAlive())
 			{
-				_nearbyEnemies.Remove(target);
+				Console.WriteLine($"I killed {nameof(target)}");
 			}
 		}
 		

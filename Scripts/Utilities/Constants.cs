@@ -18,7 +18,8 @@ public static class Constants
     public const uint ITEMS_COLLISION_LAYER = 4;
 
     public const int MAP_FLOOR_LAYER = 0;
-    public const int MAPP_WALL_LAYER = 1;
+    public const int MAP_WALL_LAYER = 1;
     public const int MAP_FURNITURE_LAYER = 2;
     public const int MAP_ITEMS_LAYER = 3;
+    public const int MAP_FLOOR_PIT_LAYER = 4;
 }

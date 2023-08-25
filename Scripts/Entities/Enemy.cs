@@ -1,4 +1,5 @@
 using System;
+using ByTheSword.Scripts.Controllers;
 using Godot;
 
 namespace ByTheSword.Scripts.Entities;
@@ -7,10 +8,27 @@ public partial class Enemy : CharacterBody2D, IEntity
 {
     private int _health;
     private Random _diceRoll;
+    private SceneController _rootSceneController;
 
     public override void _Ready()
     {
         base._Ready();
+        
+        _rootSceneController =  this.GetOwner<SceneController>();
+        if(_rootSceneController == null)
+        {
+            _rootSceneController = this.GetTree().CurrentScene as SceneController;
+            if (_rootSceneController != null)
+            {
+                this.Owner = _rootSceneController;
+            }
+            else
+            {
+                throw new Exception("Root scene cannot be found");
+            }
+        }
+		
+        _rootSceneController?.RegisterEntity(this);
 
         _health = 30;
         _diceRoll = new Random();
@@ -29,8 +47,8 @@ public partial class Enemy : CharacterBody2D, IEntity
 
         if (_health <= 0)
         {
+            _rootSceneController.DeregisterEntity(this);
             this.Free();
-            Console.WriteLine("Enemy has been vanquished");
         }
     }
 
