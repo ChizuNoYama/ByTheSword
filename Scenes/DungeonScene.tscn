@@ -80,7 +80,6 @@ collision_layer = 4
 collision_mask = 3
 script = ExtResource("4_2rit0")
 metadata/_edit_group_ = true
-metadata/is_enemy = true
 
 [node name="BlueCircle" type="Sprite2D" parent="Enemy"]
 texture = ExtResource("3_88a61")

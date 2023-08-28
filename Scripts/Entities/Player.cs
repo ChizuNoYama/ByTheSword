@@ -23,12 +23,12 @@ public partial class Player : Entity
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		RootDungeonSceneController =  this.GetOwner<DungeonSceneController>();
-		if(RootDungeonSceneController == null)
-		{
-			RootDungeonSceneController = this.GetTree().CurrentScene as DungeonSceneController;
-		}
+		RootDungeonSceneController =  this.GetOwner<DungeonSceneController>() ?? this.GetTree().CurrentScene as DungeonSceneController;
 		
+		RootDungeonSceneController.OnRoundEnded += () =>
+		{
+			this.IsTurnFinished = false;
+		};
 		RootDungeonSceneController?.RegisterEntity(this);
 		
 		_turnTimer.Interval = Constants.PLAYER_TURN_TIMER_INTERVAL;
@@ -37,7 +37,7 @@ public partial class Player : Entity
 		_timerStopped = true;
 
 		_diceRoll = new Random();
-		this.TurnFinished = false;
+		this.IsTurnFinished = false;
 		
 		this.Health= 30;
 		this.MaxHealth = 30;
@@ -57,7 +57,7 @@ public partial class Player : Entity
 			this.GetTree().Quit();
 		}
 
-		if (!_timerStopped || this.TurnFinished)
+		if (!_timerStopped || this.IsTurnFinished)
 		{
 			return;
 		}
@@ -66,7 +66,7 @@ public partial class Player : Entity
 		{
 			Vector2 targetPosition = this.Position + Vector2.Right * Constants.MOVEMENT_STEP;
 			CellData cellData = RootDungeonSceneController.PeekTargetCell(targetPosition);
-			this.PerformActionOnCell(cellData, targetPosition);
+			this.PerformActionOnCell(cellData);
 			this.EndMyTurn();
 		}
 
@@ -74,7 +74,7 @@ public partial class Player : Entity
 		{
 			Vector2 targetPosition = this.Position + Vector2.Left * Constants.MOVEMENT_STEP;
 			CellData cellData = RootDungeonSceneController.PeekTargetCell(targetPosition);
-			this.PerformActionOnCell(cellData, targetPosition);
+			this.PerformActionOnCell(cellData);
 			this.EndMyTurn();
 		}
 
@@ -82,7 +82,7 @@ public partial class Player : Entity
 		{
 			Vector2 targetPosition = this.Position + Vector2.Up * Constants.MOVEMENT_STEP;
 			CellData cellData = RootDungeonSceneController.PeekTargetCell(targetPosition);
-			this.PerformActionOnCell(cellData, targetPosition);
+			this.PerformActionOnCell(cellData);
 			this.EndMyTurn();
 		}
 
@@ -90,7 +90,7 @@ public partial class Player : Entity
 		{
 			Vector2 targetPosition = this.Position + Vector2.Down * Constants.MOVEMENT_STEP;
 			CellData cellData = RootDungeonSceneController.PeekTargetCell(targetPosition);
-			this.PerformActionOnCell(cellData, targetPosition);
+			this.PerformActionOnCell(cellData);
 			this.EndMyTurn();
 		}
 
@@ -100,7 +100,7 @@ public partial class Player : Entity
 		}
 	}
 
-	private void PerformActionOnCell(CellData cellData, Vector2 targetPosition)
+	private void PerformActionOnCell(CellData cellData)
 	{
 		if (_timerStopped)
 		{
@@ -123,7 +123,7 @@ public partial class Player : Entity
 			else
 			{
 				// Move to target cell position
-				this.Position = targetPosition;
+				this.Position = cellData.GlobalPosition;
 			}
 		}
 	}
@@ -143,7 +143,7 @@ public partial class Player : Entity
 	{
 		_turnTimer.Start();
 		_timerStopped = false;
-		this.TurnFinished = true;
+		this.IsTurnFinished = true;
 		
 		this.RootDungeonSceneController.ProcessRound();
 	}

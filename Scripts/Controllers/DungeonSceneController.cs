@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using ByTheSword.Scripts.Entities;
 using ByTheSword.Scripts.Models;
+using ByTheSword.Scripts.Utilities;
 using Godot;
 using Godot.Collections;
 using Constants = ByTheSword.Scripts.Utilities.Constants;
@@ -11,6 +13,9 @@ namespace ByTheSword.Scripts.Controllers;
 
 public partial class DungeonSceneController : Node2D
 {
+	
+	[Signal]
+	public delegate void OnRoundEndedEventHandler();
 	private TileMap _map;
 	// private CombatController _combatController;
 	private List<Entity> _entities;
@@ -36,13 +41,20 @@ public partial class DungeonSceneController : Node2D
 	private void InitializeNavigation()
 	{
 		GD.Print("Initializing cells");
-		Array<Vector2I> mapCells = _map.GetUsedCells(Constants.MAP_WALL_LAYER);
-		mapCells.AddRange(_map.GetUsedCells(Constants.MAP_FLOOR_PIT_LAYER));
+		
+		// Array<Vector2I> excludeCellsArray = _map.GetUsedCells(Constants.MAP_WALL_LAYER);
+		// mapCells.AddRange(_map.GetUsedCells(Constants.MAP_FLOOR_PIT_LAYER));
+		Vector2I lastMapPoint = _map.GetUsedCells(Constants.MAP_WALL_LAYER).Max();
 		
 		this.GridNav = new AStarGrid2D();
 		this.GridNav.CellSize = new Vector2(32, 32);
+		this.GridNav.Region = new Rect2I(_map.Position.ToVector2I(), lastMapPoint);
 		this.GridNav.DefaultComputeHeuristic = AStarGrid2D.Heuristic.Manhattan;
 		this.GridNav.DiagonalMode = AStarGrid2D.DiagonalModeEnum.Never;
+		if (this.GridNav.IsDirty())
+		{
+			this.GridNav.Update();
+		}
 	}
 
 	public void RegisterEntity(Entity entity)
@@ -75,6 +87,8 @@ public partial class DungeonSceneController : Node2D
 		{
 			cellData.Entity = entity;
 		}
+
+		cellData.GlobalPosition = targetPosition;
 		
 		return cellData;
 	}
@@ -88,19 +102,27 @@ public partial class DungeonSceneController : Node2D
 			{
 				playerEntity = x;
 			}
-			return !x.TurnFinished && !(x is Player);
+			return !x.IsTurnFinished && !(x is Player);
 		}).ToList();
 
-		if (playerEntity != null)
+		foreach (var entity in entitiesTurnPending)
 		{
-			foreach (var entity in entitiesTurnPending)
+			if (playerEntity != null)
 			{
 				if(entity.IsEnemyTo(playerEntity))
 					entity.ProcessTurn(playerEntity);
-				else
-					entity.ProcessTurn(); // TODO: this should make them move around.
 			}
+			else
+				entity.ProcessTurn(); // TODO: this should make them move around. or stand still. Or hunt enemies
 		}
+
+		this.EmitSignal(SignalName.OnRoundEnded);
+	}
+
+	public Vector2I GetMapPosition(Vector2 globalPosition)
+	{
+		Vector2 localPosition = _map.ToLocal(globalPosition);
+		return _map.LocalToMap(localPosition);
 	}
 	
 	// TODO: Emit a signal for the end of the round

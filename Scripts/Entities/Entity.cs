@@ -10,8 +10,8 @@ public abstract partial class Entity : CharacterBody2D
     protected Random _diceRoll{ get; set;  }
     public int Health { get; protected set; }
     public int MaxHealth { get; protected set; }
-    public virtual bool TurnFinished { get; protected set; }
-
+    public virtual bool IsTurnFinished { get; protected set; }
+    
     public virtual void ApplyDamage(int amount)
     {
         this.Health -= amount;
@@ -25,6 +25,11 @@ public abstract partial class Entity : CharacterBody2D
     public virtual bool IsAlive()
     {
         return this.Health > 0;
+    }
+
+    protected virtual void OnRoundEnd()
+    {
+        this.IsTurnFinished = false;
     }
     
     public abstract bool IsEnemyTo(Entity target);
