@@ -5,7 +5,7 @@ namespace ByTheSword.Scripts.Models;
 
 public class CellData
 {
-    public IEntity Entity { get; set; }
+    public Entity Entity { get; set; }
     public bool IsNoGoZone { get; set; }
     // TODO: List of items in cell
 }
