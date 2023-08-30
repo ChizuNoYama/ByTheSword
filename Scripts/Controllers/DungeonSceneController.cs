@@ -41,19 +41,29 @@ public partial class DungeonSceneController : Node2D
 	private void InitializeNavigation()
 	{
 		GD.Print("Initializing cells");
-		
-		// Array<Vector2I> excludeCellsArray = _map.GetUsedCells(Constants.MAP_WALL_LAYER);
+
+		Array<Vector2I> wallCellsArray = _map.GetUsedCells(Constants.MAP_WALL_LAYER);
+		HashSet<Vector2I> excludeCellsHash = (wallCellsArray + _map.GetUsedCells(Constants.MAP_FLOOR_PIT_LAYER)).ToHashSet();
+
+		wallCellsArray.Sort();
 		// mapCells.AddRange(_map.GetUsedCells(Constants.MAP_FLOOR_PIT_LAYER));
-		Vector2I lastMapPoint = _map.GetUsedCells(Constants.MAP_WALL_LAYER).Max();
+		Vector2I firstMapCell = wallCellsArray[0];
+		Vector2I lastWallCell = wallCellsArray[^1];
 		
 		this.GridNav = new AStarGrid2D();
 		this.GridNav.CellSize = new Vector2(32, 32);
-		this.GridNav.Region = new Rect2I(_map.Position.ToVector2I(), lastMapPoint);
+		this.GridNav.Region = new Rect2I(firstMapCell, lastWallCell);
 		this.GridNav.DefaultComputeHeuristic = AStarGrid2D.Heuristic.Manhattan;
 		this.GridNav.DiagonalMode = AStarGrid2D.DiagonalModeEnum.Never;
-		if (this.GridNav.IsDirty())
+		this.GridNav.Update();
+		foreach (Vector2I cell in excludeCellsHash)
 		{
-			this.GridNav.Update();
+			// GD.Print($"({cell.X},{cell.Y}): {this.GridNav.IsInBoundsv(cell)}");
+			if (this.GridNav.IsInBoundsv(cell))
+			{
+				this.GridNav.SetPointSolid(cell);
+			}
+			// this.GridNav.SetPointSolid(cell);
 		}
 	}
 
