@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://bhpkkh63dnwbu"]
+
+[ext_resource type="Script" path="res://Scripts/Entities/Enemy.cs" id="1_3qdkn"]
+[ext_resource type="Texture2D" uid="uid://xuee5aedvbls" path="res://Assets/Sprites/BlueCircle.png" id="2_nbtv5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_qq0eu"]
+size = Vector2(32, 32)
+
+[node name="Enemy" type="CharacterBody2D"]
+position = Vector2(192, 96)
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_3qdkn")
+metadata/_edit_group_ = true
+
+[node name="BlueCircle" type="Sprite2D" parent="."]
+texture = ExtResource("2_nbtv5")
+centered = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(16, 16)
+shape = SubResource("RectangleShape2D_qq0eu")
