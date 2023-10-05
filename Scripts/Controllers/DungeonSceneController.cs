@@ -1,10 +1,7 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using ByTheSword.Scripts.Entities;
 using ByTheSword.Scripts.Models;
-using ByTheSword.Scripts.Utilities;
 using Godot;
 using Godot.Collections;
 using Constants = ByTheSword.Scripts.Utilities.Constants;
@@ -123,7 +120,7 @@ public partial class DungeonSceneController : Node2D
 					entity.ProcessTurn(playerEntity);
 			}
 			else
-				entity.ProcessTurn(); // TODO: this should make them move around. or stand still. Or hunt enemies
+				entity.ProcessTurn();
 		}
 
 		this.EmitSignal(SignalName.OnRoundEnded);
@@ -134,12 +131,4 @@ public partial class DungeonSceneController : Node2D
 		Vector2 localPosition = _map.ToLocal(globalPosition);
 		return _map.LocalToMap(localPosition);
 	}
-	
-	// TODO: Emit a signal for the end of the round
-
-	// public Entity GetEntity<T>(Predicate<IEntity> predicate)  where T : Entity
-	// {
-	// 	IEntity found = 
-	// 	return null;
-	// }
 }

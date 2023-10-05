@@ -23,7 +23,19 @@ public partial class Player : Entity
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		RootDungeonSceneController =  this.GetOwner<DungeonSceneController>() ?? this.GetTree().CurrentScene as DungeonSceneController;
+		this.RootDungeonSceneController =  this.GetOwner<DungeonSceneController>() ?? this.GetTree().CurrentScene as DungeonSceneController;
+		if(this.RootDungeonSceneController == null)
+		{
+			this.RootDungeonSceneController = this.GetTree().CurrentScene as DungeonSceneController;
+			if (this.RootDungeonSceneController != null)
+			{
+				this.Owner = this.RootDungeonSceneController;
+			}
+			else
+			{
+				throw new Exception("Root scene cannot be found");
+			}
+		}
 		
 		RootDungeonSceneController.OnRoundEnded += () =>
 		{
@@ -148,20 +160,18 @@ public partial class Player : Entity
 		this.RootDungeonSceneController.ProcessRound();
 	}
 
-	public void ApplyDamage(int damageAmount)
+	public override void ApplyDamage(int damageAmount)
 	{
 		base.ApplyDamage(damageAmount);
 
+		Console.ForegroundColor = ConsoleColor.Red;
+		Console.WriteLine($"Current health: {this.Health}");
+		Console.ResetColor();
 		if (this.Health <= 0)
 		{
 			Console.WriteLine("I died.");
 			this.GetTree().Quit();
 		}
-	}
-
-	public Vector2 GetPosition()
-	{
-		return this.Position;
 	}
 
 	public override void Attack(Entity target)
