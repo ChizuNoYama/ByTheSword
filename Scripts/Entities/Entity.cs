@@ -12,7 +12,7 @@ public abstract partial class Entity : CharacterBody2D
     public int MaxHealth { get; protected set; }
     public virtual bool IsTurnFinished { get; protected set; }
     
-    public virtual void ApplyDamage(int amount)
+    public virtual void ApplyDamageToSelf(int amount)
     {
         this.Health -= amount;
     }

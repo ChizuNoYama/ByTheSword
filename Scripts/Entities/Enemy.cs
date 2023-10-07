@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics;
 using ByTheSword.Scripts.Controllers;
 using ByTheSword.Scripts.Models;
-using ByTheSword.Scripts.Utilities;
 using Godot;
 
 namespace ByTheSword.Scripts.Entities;
@@ -45,16 +44,9 @@ public partial class Enemy : Entity
 		this.MaxHealth = 30;
 	}
 
-	public override void _PhysicsProcess(double delta)
+	public override void ApplyDamageToSelf(int damageAmount)
 	{
-		base._PhysicsProcess(delta);
-		
-		// Do nothing for now
-	}
-
-	public override void ApplyDamage(int damageAmount)
-	{
-		base.ApplyDamage(damageAmount);
+		base.ApplyDamageToSelf(damageAmount);
 		
 		Console.ForegroundColor = ConsoleColor.Red;
 		Console.WriteLine($"Current health: {this.Health}");
@@ -83,7 +75,7 @@ public partial class Enemy : Entity
 		{
 			// TODO: This will come from weapon from EquipmentManager.
 			int damageAmount = 5;
-			target.ApplyDamage(damageAmount);
+			target.ApplyDamageToSelf(damageAmount);
 			Console.WriteLine($"Enemy dealt {damageAmount}");
 		}
 		Console.WriteLine();
@@ -125,7 +117,6 @@ public partial class Enemy : Entity
 
 				CellData cellData = this.RootDungeonSceneController.PeekTargetCell(targetCell);
 				this.PerformActionOnCell(cellData);
-				
 			}
 			// Move towards target
 		}

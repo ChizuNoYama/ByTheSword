@@ -160,9 +160,9 @@ public partial class Player : Entity
 		this.RootDungeonSceneController.ProcessRound();
 	}
 
-	public override void ApplyDamage(int damageAmount)
+	public override void ApplyDamageToSelf(int damageAmount)
 	{
-		base.ApplyDamage(damageAmount);
+		base.ApplyDamageToSelf(damageAmount);
 
 		Console.ForegroundColor = ConsoleColor.Red;
 		Console.WriteLine($"Current health: {this.Health}");
@@ -181,7 +181,7 @@ public partial class Player : Entity
 		if (target.GetArmorClass() < attackRoll)
 		{
 			int damageAmount = 5; // TODO: This will come from weapon from EquipmentManager
-			target.ApplyDamage(damageAmount);
+			target.ApplyDamageToSelf(damageAmount);
 			
 			Console.WriteLine($"I dealt {damageAmount}");
 			if (!target.IsAlive())
